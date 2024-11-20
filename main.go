@@ -28,6 +28,7 @@ var (
 	stateDir     = flag.String("state-dir", "/state", "directory to store state in")
 	controlURL   = flag.String("control-url", "", "control URL to use, leave empty for default")
 	printVersion = flag.Bool("version", false, "print version and exit")
+	authkey      = flag.String("authkey", "", "authkey to use")
 
 	version = "devel"
 )
@@ -107,10 +108,15 @@ func main() {
 		*controlURL = u
 	}
 
+	if ak := os.Getenv("TS_AUTHKEY"); ak != "" {
+		*authkey = ak
+	}
+
 	s := &tsnet.Server{
 		Hostname:   *hostname,
 		Dir:        *stateDir,
 		ControlURL: *controlURL,
+		AuthKey:    *authkey,
 	}
 	defer s.Close()
 
@@ -196,6 +202,7 @@ func startServer(ctx context.Context, s *tsnet.Server, portStr, proxyTarget stri
 	}
 
 	// This kicks off the server.
+	log.Printf("Serving %s on %s:%s", proxyTarget, st.CertDomains[0], portStr)
 	return lc.SetServeConfig(ctx, srvConfig)
 }
 
